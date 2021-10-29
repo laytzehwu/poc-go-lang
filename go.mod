@@ -1,4 +1,4 @@
-module poc-go-lang
+module github.com/laytzehwu/poc-go-lang
 
 go 1.17
 
