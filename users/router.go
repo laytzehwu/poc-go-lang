@@ -11,7 +11,7 @@ type Router struct {
 	AhLayGinEngine *gin.Engine
 }
 
-func (r *Router) RouterInit() {
+func defineUserRoutes(r *Router) {
 	userGroup := r.AhLayGinEngine.Group("/user")
 	{
 		userGroup.GET("", func(c *gin.Context) {
@@ -27,7 +27,7 @@ func (r *Router) RouterInit() {
 				name := c.Param("name")
 				fmt.Printf("User %s is accessing\n", name)
 				c.JSON(200, gin.H{
-					"message": fmt.Sprintf("Welcome %s", name),
+					"message": fmt.Sprintf("Welcome back %s XXX", name),
 				})
 			})
 			specUserAction := specUser.Group("/*action")
@@ -49,6 +49,47 @@ func (r *Router) RouterInit() {
 				})
 			}
 		}
-
 	}
+}
+
+func defineUserActionRoute(r *Router) {
+	r.AhLayGinEngine.GET("/user-action", func(c *gin.Context) {
+		name := c.Query("name")
+		action := c.Query("action")
+		if name == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Missing query name",
+			})
+			return
+		}
+		if action == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Missing query action",
+			})
+			return
+		}
+		c.String(http.StatusOK, fmt.Sprintf("%s does %s", name, action))
+	})
+}
+
+func defineUserActionForm(r *Router) {
+	r.AhLayGinEngine.POST("/user-action-form", func(c *gin.Context) {
+		name := c.Copy().DefaultPostForm("name", "guest")
+		action := c.PostForm("action")
+		if action == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Missing action",
+			})
+			return
+		}
+		c.JSON(http.StatusAccepted, gin.H{
+			"message": fmt.Sprintf("Hi %s your request action: %s is received", name, action),
+		})
+	})
+}
+
+func (r *Router) RouterInit() {
+	defineUserRoutes(r)
+	defineUserActionRoute(r)
+	defineUserActionForm(r)
 }
